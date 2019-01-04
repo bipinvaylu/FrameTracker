@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -14,6 +15,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatButton;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.otaliastudios.cameraview.CameraListener;
@@ -28,12 +30,22 @@ public class TrackerActivity extends AppCompatActivity {
 
     private CameraView cameraView;
     private FrameTracker frameTracker;
+    private TextView timerValue;
+
+    private long startTime = 0L;
+
+    private Handler customHandler = new Handler();
+
+    long timeInMilliseconds = 0L;
+    long timeSwapBuff = 0L;
+    long updatedTime = 0L;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tracker);
         cameraView = findViewById(R.id.cameraView);
+        timerValue = findViewById(R.id.timerValue);
         CameraLogger.setLogLevel(CameraLogger.LEVEL_VERBOSE);
         CameraLogger.registerLogger(new CameraLogger.Logger() {
             @Override
@@ -109,6 +121,9 @@ public class TrackerActivity extends AppCompatActivity {
     }
 
     public void stopVideo() {
+        startTime = 0;
+        customHandler.removeCallbacks(updateTimerThread);
+        timerValue.setText("00:00");
         if (cameraView.isTakingVideo()) {
             cameraView.stopVideo();
         }
@@ -119,6 +134,8 @@ public class TrackerActivity extends AppCompatActivity {
                 .show();
         cameraView.takeVideoSnapshot(new File(getVideoFilePath(),
                         System.currentTimeMillis() + ".mp4"));
+        startTime = SystemClock.uptimeMillis();
+        customHandler.postDelayed(updateTimerThread, 0);
     }
 
     @Override
@@ -131,5 +148,26 @@ public class TrackerActivity extends AppCompatActivity {
             }
         }
     }
+
+
+
+
+    private Runnable updateTimerThread = new Runnable() {
+
+        public void run() {
+
+            timeInMilliseconds = SystemClock.uptimeMillis() - startTime;
+
+            updatedTime = timeSwapBuff + timeInMilliseconds;
+
+            int secs = (int) (updatedTime / 1000);
+            int mins = secs / 60;
+            secs = secs % 60;
+            int milliseconds = (int) (updatedTime % 1000);
+            timerValue.setText(String.format("%02d:%02d", mins, secs));
+            customHandler.postDelayed(this, 0);
+        }
+
+    };
 
 }
