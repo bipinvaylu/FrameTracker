@@ -1,6 +1,5 @@
 package test.example.frametracker;
 
-import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.otaliastudios.cameraview.CameraView;
@@ -24,16 +23,11 @@ public class FrameTracker {
         Log.d("FrameTracker", "Start Tracking...");
         cameraView.addFrameProcessor(new FrameProcessor() {
             @Override
-            public void process(@NonNull Frame frame) {
-                Log.d("FrameTracker", "Tracking frame running");
-                if(!isTracking) {
-                    return;
-                }
-                if (frame.getData() == null) {
-                    return;
-                }
+            public void process(Frame frame) {
+                Log.d("FrameTracker", "Tracking frame running, Frame is null: " + (frame == null));
             }
         });
+
         isTracking = true;
     }
 
