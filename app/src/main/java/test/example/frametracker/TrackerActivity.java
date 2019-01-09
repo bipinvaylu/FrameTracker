@@ -1,27 +1,29 @@
 package test.example.frametracker;
 
 import android.Manifest;
-import android.content.Intent;
+import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
-import android.net.Uri;
+import android.media.Image;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.SystemClock;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.AppCompatButton;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatButton;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
+import kotlin.Unit;
+import timber.log.Timber;
 
-import com.otaliastudios.cameraview.CameraListener;
-import com.otaliastudios.cameraview.CameraLogger;
-import com.otaliastudios.cameraview.CameraView;
-import com.otaliastudios.cameraview.VideoResult;
+
+import com.priyankvasa.android.cameraviewex.CameraView;
+import com.priyankvasa.android.cameraviewex.ErrorLevel;
 
 import java.io.File;
 
@@ -29,34 +31,25 @@ import java.io.File;
 public class TrackerActivity extends AppCompatActivity {
 
     private CameraView cameraView;
-    private FrameTracker frameTracker;
-    private TextView timerValue;
+//    private FrameTracker frameTracker;
 
-    private long startTime = 0L;
+    private static final int REQUEST_VIDEO_PERMISSIONS = 1;
 
-    private Handler customHandler = new Handler();
-
-    long timeInMilliseconds = 0L;
-    long timeSwapBuff = 0L;
-    long updatedTime = 0L;
+    private static final String[] VIDEO_PERMISSIONS = {
+            Manifest.permission.CAMERA,
+            Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tracker);
         cameraView = findViewById(R.id.cameraView);
-        timerValue = findViewById(R.id.timerValue);
-        CameraLogger.setLogLevel(CameraLogger.LEVEL_VERBOSE);
-        CameraLogger.registerLogger(new CameraLogger.Logger() {
-            @Override
-            public void log(int level, String tag, String message, Throwable throwable) {
-                Log.d(tag, "CameraLogger - " + message);
-            }
-        });
         findViewById(R.id.startRecording).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (cameraView.isTakingVideo()) {
+                if (cameraView.isVideoRecording()) {
                     stopVideo();
                     ((AppCompatButton) v).setText("Start Recording");
                 } else {
@@ -65,30 +58,34 @@ public class TrackerActivity extends AppCompatActivity {
                 }
             }
         });
-        frameTracker = new FrameTracker(cameraView);
+//        frameTracker = new FrameTracker(cameraView);
 
-        cameraView.addCameraListener(new CameraListener() {
-            @Override
-            public void onVideoTaken(VideoResult result) {
-                super.onVideoTaken(result);
-                String newVideoPath = result.getFile().getAbsolutePath();
-                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(newVideoPath));
-                intent.setDataAndType(Uri.parse(newVideoPath), "video/mp4");
-                startActivity(intent);
-            }
+//        cameraView.addCameraListener(new CameraListener() {
+//            @Override
+//            public void onVideoTaken(VideoResult result) {
+//                super.onVideoTaken(result);
+//                String newVideoPath = result.getFile().getAbsolutePath();
+//                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(newVideoPath));
+//                intent.setDataAndType(Uri.parse(newVideoPath), "video/mp4");
+//                startActivity(intent);
+//            }
+//        });
+
+        cameraView.addCameraErrorListener((Throwable t, ErrorLevel errorLevel) -> {
+            Log.e(TrackerActivity.class.getCanonicalName(), "ERROR: level: " + errorLevel + ", message: " + t.getLocalizedMessage());
+            return Unit.INSTANCE;
         });
 
+        cameraView.setPreviewFrameListener((Image image) -> {
+            Log.d(TrackerActivity.class.getCanonicalName(), "Image frame ....");
+            return Unit.INSTANCE;
+        });
     }
 
     private void startTracking(long delay) {
         Toast.makeText(this, "Tracking...", Toast.LENGTH_SHORT)
                 .show();
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                frameTracker.startTracking();
-            }
-        }, delay);
+//        frameTracker.startTracking();
     }
 
     private String getVideoFilePath() {
@@ -99,9 +96,18 @@ public class TrackerActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        if(!hasPermissionsGranted(VIDEO_PERMISSIONS)) {
+            requestVideoPermissions();
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    @Override
     protected void onResume() {
         super.onResume();
-        cameraView.open();
+        cameraView.start();
         startTracking(1L);
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -116,26 +122,23 @@ public class TrackerActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         stopVideo();
-        frameTracker.stopTracking();
-        cameraView.close();
+//        frameTracker.stopTracking();
+        cameraView.stop(true);
     }
 
     public void stopVideo() {
-        startTime = 0;
-        customHandler.removeCallbacks(updateTimerThread);
-        timerValue.setText("00:00");
-        if (cameraView.isTakingVideo()) {
-            cameraView.stopVideo();
+        if (cameraView.isVideoRecording()) {
+            cameraView.stopVideoRecording();
         }
     }
+
+    @SuppressLint("MissingPermission")
     public void startTakingVideo() {
         stopVideo();
         Toast.makeText(this, "Recording...", Toast.LENGTH_SHORT)
                 .show();
-        cameraView.takeVideoSnapshot(new File(getVideoFilePath(),
-                        System.currentTimeMillis() + ".mp4"));
-        startTime = SystemClock.uptimeMillis();
-        customHandler.postDelayed(updateTimerThread, 0);
+        cameraView.startVideoRecording(new File(getVideoFilePath(),
+                    System.currentTimeMillis() + ".mp4"));
     }
 
     @Override
@@ -149,25 +152,32 @@ public class TrackerActivity extends AppCompatActivity {
         }
     }
 
-
-
-
-    private Runnable updateTimerThread = new Runnable() {
-
-        public void run() {
-
-            timeInMilliseconds = SystemClock.uptimeMillis() - startTime;
-
-            updatedTime = timeSwapBuff + timeInMilliseconds;
-
-            int secs = (int) (updatedTime / 1000);
-            int mins = secs / 60;
-            secs = secs % 60;
-            int milliseconds = (int) (updatedTime % 1000);
-            timerValue.setText(String.format("%02d:%02d", mins, secs));
-            customHandler.postDelayed(this, 0);
+    private boolean shouldShowRequestPermissionRationale(String[] permissions) {
+        for (String permission : permissions) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, permission)) {
+                return true;
+            }
         }
+        return false;
+    }
 
-    };
+    private void requestVideoPermissions() {
+        if (shouldShowRequestPermissionRationale(VIDEO_PERMISSIONS)) {
+            //
+        } else {
+            ActivityCompat.requestPermissions(this, VIDEO_PERMISSIONS, REQUEST_VIDEO_PERMISSIONS);
+        }
+    }
+
+
+    private boolean hasPermissionsGranted(String[] permissions) {
+        for (String permission : permissions) {
+            if (ActivityCompat.checkSelfPermission(this, permission)
+                    != PackageManager.PERMISSION_GRANTED) {
+                return false;
+            }
+        }
+        return true;
+    }
 
 }

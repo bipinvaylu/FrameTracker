@@ -2,9 +2,7 @@ package test.example.frametracker;
 
 import android.util.Log;
 
-import com.otaliastudios.cameraview.CameraView;
-import com.otaliastudios.cameraview.Frame;
-import com.otaliastudios.cameraview.FrameProcessor;
+import com.priyankvasa.android.cameraviewex.CameraView;
 
 
 /**
@@ -21,12 +19,12 @@ public class FrameTracker {
 
     public void startTracking() {
         Log.d("FrameTracker", "Start Tracking...");
-        cameraView.addFrameProcessor(new FrameProcessor() {
-            @Override
-            public void process(Frame frame) {
-                Log.d("FrameTracker", "Tracking frame running, Frame is null: " + (frame == null));
-            }
-        });
+//        cameraView.addFrameProcessor(new FrameProcessor() {
+//            @Override
+//            public void process(Frame frame) {
+//                Log.d("FrameTracker", "Tracking frame running, Frame is null: " + (frame == null));
+//            }
+//        });
 
         isTracking = true;
     }
@@ -34,6 +32,6 @@ public class FrameTracker {
     public void stopTracking() {
         Log.d("FrameTracker", "Stop Tracking...");
         isTracking = false;
-        cameraView.clearFrameProcessors();
+//        cameraView.clearFrameProcessors();
     }
 }
