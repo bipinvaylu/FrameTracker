@@ -14,23 +14,16 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import android.util.Log;
 import android.view.View;
-import android.widget.TextView;
 import android.widget.Toast;
-import kotlin.Unit;
-import timber.log.Timber;
 
-
-import com.priyankvasa.android.cameraviewex.CameraView;
-import com.priyankvasa.android.cameraviewex.ErrorLevel;
 
 import java.io.File;
 
 
 public class TrackerActivity extends AppCompatActivity {
 
-    private CameraView cameraView;
+//    private CameraView cameraView;
 //    private FrameTracker frameTracker;
 
     private static final int REQUEST_VIDEO_PERMISSIONS = 1;
@@ -45,17 +38,17 @@ public class TrackerActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tracker);
-        cameraView = findViewById(R.id.cameraView);
+//        cameraView = findViewById(R.id.cameraView);
         findViewById(R.id.startRecording).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (cameraView.isVideoRecording()) {
-                    stopVideo();
-                    ((AppCompatButton) v).setText("Start Recording");
-                } else {
-                    startTakingVideo();
-                    ((AppCompatButton) v).setText("Stop Recording");
-                }
+//                if (cameraView.isVideoRecording()) {
+//                    stopVideo();
+//                    ((AppCompatButton) v).setText("Start Recording");
+//                } else {
+//                    startTakingVideo();
+//                    ((AppCompatButton) v).setText("Stop Recording");
+//                }
             }
         });
 //        frameTracker = new FrameTracker(cameraView);
@@ -71,15 +64,15 @@ public class TrackerActivity extends AppCompatActivity {
 //            }
 //        });
 
-        cameraView.addCameraErrorListener((Throwable t, ErrorLevel errorLevel) -> {
-            Log.e(TrackerActivity.class.getCanonicalName(), "ERROR: level: " + errorLevel + ", message: " + t.getLocalizedMessage());
-            return Unit.INSTANCE;
-        });
+//        cameraView.addCameraErrorListener((Throwable t, ErrorLevel errorLevel) -> {
+//            Log.e(TrackerActivity.class.getCanonicalName(), "ERROR: level: " + errorLevel + ", message: " + t.getLocalizedMessage());
+//            return Unit.INSTANCE;
+//        });
 
-        cameraView.setPreviewFrameListener((Image image) -> {
-            Log.d(TrackerActivity.class.getCanonicalName(), "Image frame ....");
-            return Unit.INSTANCE;
-        });
+//        cameraView.setPreviewFrameListener((Image image) -> {
+//            Log.d(TrackerActivity.class.getCanonicalName(), "Image frame ....");
+//            return Unit.INSTANCE;
+//        });
     }
 
     private void startTracking(long delay) {
@@ -107,7 +100,7 @@ public class TrackerActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        cameraView.start();
+//        cameraView.start();
         startTracking(1L);
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -123,13 +116,13 @@ public class TrackerActivity extends AppCompatActivity {
         super.onPause();
         stopVideo();
 //        frameTracker.stopTracking();
-        cameraView.stop(true);
+//        cameraView.stop(true);
     }
 
     public void stopVideo() {
-        if (cameraView.isVideoRecording()) {
-            cameraView.stopVideoRecording();
-        }
+//        if (cameraView.isVideoRecording()) {
+//            cameraView.stopVideoRecording();
+//        }
     }
 
     @SuppressLint("MissingPermission")
@@ -137,8 +130,8 @@ public class TrackerActivity extends AppCompatActivity {
         stopVideo();
         Toast.makeText(this, "Recording...", Toast.LENGTH_SHORT)
                 .show();
-        cameraView.startVideoRecording(new File(getVideoFilePath(),
-                    System.currentTimeMillis() + ".mp4"));
+//        cameraView.startVideoRecording(new File(getVideoFilePath(),
+//                    System.currentTimeMillis() + ".mp4"));
     }
 
     @Override

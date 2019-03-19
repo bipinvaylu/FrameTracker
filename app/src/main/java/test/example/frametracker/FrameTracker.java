@@ -2,7 +2,6 @@ package test.example.frametracker;
 
 import android.util.Log;
 
-import com.priyankvasa.android.cameraviewex.CameraView;
 
 
 /**
@@ -11,11 +10,11 @@ import com.priyankvasa.android.cameraviewex.CameraView;
 public class FrameTracker {
 
     private boolean isTracking = false;
-    private CameraView cameraView;
+//    private CameraView cameraView;
 
-    public FrameTracker(CameraView cameraView) {
-        this.cameraView = cameraView;
-    }
+//    public FrameTracker(CameraView cameraView) {
+//        this.cameraView = cameraView;
+//    }
 
     public void startTracking() {
         Log.d("FrameTracker", "Start Tracking...");

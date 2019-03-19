@@ -7,9 +7,11 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-feature android:name="android.hardware.camera" />
     <!--<uses-sdk-->
-        <!--android:minSdkVersion="14"-->
-        <!--android:targetSdkVersion="28" />-->
+    <!--android:minSdkVersion="14"-->
+    <!--android:targetSdkVersion="28" />-->
 
     <application
         android:allowBackup="true"
@@ -21,7 +23,7 @@
         tools:replace="android:icon">
 
         <activity
-            android:name=".TrackerActivity"
+            android:name=".RecordActivity"
             android:label="Tracker"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
@@ -32,6 +34,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
 
     </application>
 
